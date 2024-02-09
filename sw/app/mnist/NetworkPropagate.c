@@ -28,12 +28,19 @@ static int clamp(int v, int lo, int hi) {
     }
 }
 
-static void macsOnRange(const UDATA_T* __restrict inputs,
+static inline void macsOnRange(const UDATA_T* __restrict inputs,
                         const WDATA_T* __restrict weights,
                         SUM_T* __restrict weightedSum,
                         int nb_iterations)
 {
-    for (int iter = 0; iter < nb_iterations; ++iter) {
+    int iter = 0;
+    /* for (; iter < nb_iterations-3; iter+=4) { */
+    /*     *weightedSum += inputs[iter] * weights[iter]; */
+    /*     *weightedSum += inputs[iter+1] * weights[iter+1]; */
+    /*     *weightedSum += inputs[iter+2] * weights[iter+2]; */
+    /*     *weightedSum += inputs[iter+3] * weights[iter+3]; */
+    /* } */
+    for (; iter < nb_iterations; iter++) {
         *weightedSum += inputs[iter] * weights[iter];
     }
 }

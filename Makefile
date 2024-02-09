@@ -61,6 +61,10 @@ elf-bin        ?= sw/app/benchmarks/coremark.riscv
 # Application to simulate
 APP            ?= mnist
 
+# where to find apps
+XILINX_PATH = /home/user/.local/share/Xilinx/
+export PATH := $(XILINX_PATH)/Vitis/2020.2/bin:$(XILINX_PATH)/Vivado/2020.2/bin:$(PATH)
+
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))

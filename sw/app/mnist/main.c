@@ -59,14 +59,26 @@ int main(int argc, char* argv[]) {
     UDATA_T output_value;
 
     readStimulus(inputBuffer, expectedOutputBuffer);
+#ifndef X86
     instret = -read_csr(minstret);
     cycles = -read_csr(mcycle);
-    const int success = processInput(inputBuffer, 
-                                                        expectedOutputBuffer, 
-                                                        predictedOutputBuffer,
-							&output_value);
+#endif
+
+    int success;
+#ifdef X86
+    for (int i=0; i<1000000; i++) {
+#endif
+    success = processInput(inputBuffer, 
+                                     expectedOutputBuffer, 
+                                     predictedOutputBuffer,
+                                     &output_value);
+#ifdef X86
+    }
+#endif
+#ifndef X86
     instret += read_csr(minstret);
     cycles += read_csr(mcycle);
+#endif
     
     printf("Expected  = %d\n", expectedOutputBuffer[0]);
     printf("Predicted = %d\n", predictedOutputBuffer[0]);

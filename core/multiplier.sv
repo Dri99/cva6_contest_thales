@@ -138,6 +138,10 @@ module multiplier
   // -----------------------
   // Output pipeline register
   // -----------------------
+  //assign operator_q = operator_d;
+  //assign mult_valid_q = mult_valid;
+  //assign mult_result_q = mult_result_d;
+  //assign trans_id_q = trans_id_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       mult_valid_q  <= '0;

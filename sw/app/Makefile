@@ -66,6 +66,7 @@ RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy
 RISCV_AR ?= $(RISCV_PREFIX)ar
 RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
 
+X86_GCC ?= gcc
 
 SRC_BSP_C=$(wildcard $(bsp_dir)/hal/*.c) $(wildcard $(bsp_dir)/drivers/uart/*.c) 
 SRC_BSP_S=$(wildcard $(bsp_dir)/hal/*.S)
@@ -84,7 +85,7 @@ INCS += -I$(src_dir)/../bsp/config \
 	-I$(src_dir)/coremark/simple \
 	-I$(src_dir)/common \
 	$(addprefix -I$(src_dir)/, $(bmarks))
-	
+
 FLAGS_STR:="$(RISCV_CFLAGS)  $(RISCV_LDFLAGS) "
 
 CFLAGS ?=-march=rv32im_zicsr -mabi=ilp32 -DPREALLOCATE=1 -fvisibility=hidden -DSTDIO_THRU_UART -O3 -mcmodel=medany   -static  -Wall -pedantic 
@@ -96,6 +97,7 @@ RISCV_CFLAGS :=-DPERFORMANCE_RUN=1 \
 
 RISCV_LDFLAGS=-L./ -lcva6 -static -nostartfiles -T $(src_dir)/../bsp/config/link.ld
 
+X86_CFLAGS := -O2 -Wall -pedantic -DX86 -g -pg
 
 
 incs  += -I$(src_dir)/../env -I$(src_dir)/common $(addprefix -I$(src_dir)/, $(bmarks))
@@ -106,6 +108,7 @@ define generate_rules =
 $(1)_SRC_DIR = ./$(1)/
 $(1)_SRC_FILES = $$(shell find $$($(1)_SRC_DIR) -name "*.c")
 $(1)_OBJ_FILES = $$($(1)_SRC_FILES:.c=.o)
+$(1)_OBJ_FILES_X86 = $$($(1)_SRC_FILES:.c=.o.x86)
 ALL_OBJ += $$($(1)_OBJ_FILES)
 $(1): $(1).D $(1).riscv
 $(1): $(1).hex $(1).riscv
@@ -115,9 +118,14 @@ $(1): $(1).coe $(1).mem
 $(1).riscv: libcva6.a $$($(1)_OBJ_FILES)
 	# LINKING
 	$$(RISCV_GCC) $$(RISCV_CFLAGS) -o $$@ $$^ $$(RISCV_LDFLAGS)
+$(1).x86: $$($(1)_OBJ_FILES_X86)
+	$$(X86_GCC) $$(X86_CFLAGS) -o $$@ $$^ $$(X86_LDFLAGS)
 endef
 
 $(foreach bmark,$(bmarks),$(eval $(call generate_rules,$(bmark))))
+
+%.riscv.s: %.c
+	$(RISCV_GCC) $(INCS) -S -o $@ $< $(RISCV_CFLAGS)
 
 %.D: %.riscv 
 	$(RISCV_OBJDUMP) -D $< > $@
@@ -134,8 +142,14 @@ libcva6.a: $(OBJ_BSP)
 %.o: %.c
 	$(RISCV_GCC) $(INCS) -o $@ -c $< $(RISCV_CFLAGS)
 
+%.o.x86: %.c
+	$(X86_GCC) $(INCS) -o $@ -c $< $(X86_CFLAGS)
+
 %.o: %.S
 	$(RISCV_GCC) -o $@ -c $< $(CFLAGS)
+
+%.o.x86: %.S
+	$(X86_GCC) -o $@ -c $< $(CFLAGS)
 
 %.mem: %.bin
 	$(utils_dir)/bin2mem.py $(src_dir)/$<
@@ -148,6 +162,6 @@ all: $(bmarks)
 
 
 clean:
-	rm -rf $(OBJ_BSP) $(ALL_OBJ) libcva6.a *.riscv *.o *.D *.mem *.bin *.coe *.hex
+	rm -rf $(OBJ_BSP) $(ALL_OBJ) libcva6.a *.riscv *.o *.D *.mem *.bin *.coe *.hex *.riscv.s
 
 
