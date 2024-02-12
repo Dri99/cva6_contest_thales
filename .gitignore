@@ -47,3 +47,4 @@ Bender.lock
 /tools/
 /util/gcc-toolchain-builder/src/
 /util/gcc-toolchain-builder/build/
+.vscode
