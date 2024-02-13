@@ -7,6 +7,11 @@
 #include "Network.h"
 #include "util.h"
 
+#include "hpm.h"
+
+size_t macsOnRange_time = 0;
+int macsOnRange_calls = 0;
+
 void readStimulus(
                   UDATA_T* inputBuffer,
                   Target_T* expectedOutputBuffer)
@@ -47,6 +52,9 @@ int main(int argc, char* argv[]) {
 
     // const N2D2::Network network{};
     size_t instret, cycles;
+    size_t il1_miss, dl1_miss;
+    size_t loads, stores;
+    size_t stalls, sb_full;
 
 #if ENV_DATA_UNSIGNED
     UDATA_T inputBuffer[ENV_SIZE_Y*ENV_SIZE_X*ENV_NB_OUTPUTS];
@@ -58,6 +66,22 @@ int main(int argc, char* argv[]) {
     Target_T predictedOutputBuffer[OUTPUTS_SIZE[0]];
     UDATA_T output_value;
 
+    // Active les compteurs de performance
+    write_csr(mhpmevent3, HPM_L1_ICACHE_MISSES);
+    write_csr(mhpmevent4, HPM_L1_DCACHE_MISSES);
+    write_csr(mhpmevent5, HPM_LOADS);
+    write_csr(mhpmevent6, HPM_STORES);
+    write_csr(mhpmevent7, HPM_STALL);
+    write_csr(mhpmevent8, HPM_MSB_FULL);
+
+    il1_miss = -read_csr(mhpmcounter3);
+    dl1_miss = -read_csr(mhpmcounter4);
+    loads = -read_csr(mhpmcounter5);
+    stores = -read_csr(mhpmcounter6);
+    stalls = -read_csr(mhpmcounter7);
+    sb_full = -read_csr(mhpmcounter8);
+    
+
     readStimulus(inputBuffer, expectedOutputBuffer);
     instret = -read_csr(minstret);
     cycles = -read_csr(mcycle);
@@ -67,6 +91,13 @@ int main(int argc, char* argv[]) {
 							&output_value);
     instret += read_csr(minstret);
     cycles += read_csr(mcycle);
+
+    il1_miss += read_csr(mhpmcounter3);
+    dl1_miss += read_csr(mhpmcounter4);
+    loads += read_csr(mhpmcounter5);
+    stores += read_csr(mhpmcounter6);
+    stalls += read_csr(mhpmcounter7);
+    sb_full += read_csr(mhpmcounter8);
     
     printf("Expected  = %d\n", expectedOutputBuffer[0]);
     printf("Predicted = %d\n", predictedOutputBuffer[0]);
@@ -74,6 +105,15 @@ int main(int argc, char* argv[]) {
     printf("credence: %d\n", output_value);
     printf("image %s: %d instructions\n", stringify(MNIST_INPUT_IMAGE), (int)(instret));
     printf("image %s: %d cycles\n", stringify(MNIST_INPUT_IMAGE), (int)(cycles));
+    printf("il1_miss : %d\n", (int)il1_miss);
+    printf("dl1_miss : %d\n", (int)dl1_miss);
+    printf("loads : %d\n", (int)loads);
+    printf("stores : %d\n", (int)stores);
+    printf("stalls : %d\n", (int)stalls);
+    printf("scoreboard full : %d\n", (int)sb_full);
+
+    printf("macsOnRange calls : %d\n", macsOnRange_calls);
+    printf("macsOnRange cycles : %d\n", (int)macsOnRange_time);
 
 #ifdef OUTPUTFILE
     FILE *f = fopen("success_rate.txt", "w");
