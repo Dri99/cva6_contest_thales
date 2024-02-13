@@ -3,12 +3,17 @@
 
 #include "env.h"
 #include "mem_info.h"
+#include "util.h"
 
 #include "conv1.h"
 #include "conv2.h"
 #include "fc1.h"
 #include "fc2.h"
 
+#ifdef PROFILE_MACSONRANGE
+extern size_t macsOnRange_time;
+extern int macsOnRange_calls;
+#endif
 
 static DATA_T mem[MEMORY_SIZE];
 
@@ -33,16 +38,25 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
                         SUM_T* __restrict weightedSum,
                         int nb_iterations)
 {
+#ifdef PROFILE_MACSONRANGE
+    macsOnRange_calls++;
+    macsOnRange_time -= read_csr(mcycle);
+#endif
     int iter = 0;
-    /* for (; iter < nb_iterations-3; iter+=4) { */
-    /*     *weightedSum += inputs[iter] * weights[iter]; */
-    /*     *weightedSum += inputs[iter+1] * weights[iter+1]; */
-    /*     *weightedSum += inputs[iter+2] * weights[iter+2]; */
-    /*     *weightedSum += inputs[iter+3] * weights[iter+3]; */
-    /* } */
+#ifdef UNROLLED
+    for (; iter < nb_iterations-3; iter+=4) {
+        *weightedSum += inputs[iter]   * weights[iter];
+        *weightedSum += inputs[iter+1] * weights[iter+1];
+        *weightedSum += inputs[iter+2] * weights[iter+2];
+        *weightedSum += inputs[iter+3] * weights[iter+3];
+    }
+#endif
     for (; iter < nb_iterations; iter++) {
         *weightedSum += inputs[iter] * weights[iter];
     }
+#endif PROFILE_MACSONRANGE
+    macsOnRange_time += read_csr(mcycle);
+#endif
 }
 
 static UDATA_T saturate(SUM_T value, uint32_t sat) {
