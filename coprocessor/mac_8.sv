@@ -21,8 +21,6 @@
 
 
 module mac_8(
-    input clk,
-    input reset,
     input unsigned [7:0] in_0,
     input unsigned [7:0] in_1,
     input unsigned [7:0] in_2,
@@ -31,7 +29,8 @@ module mac_8(
     input signed [7:0] weight_1,
     input signed [7:0] weight_2,
     input signed [7:0] weight_3,
-    output [31:0] out
+    input signed [31:0] sum_in,
+    output signed [31:0] sum_out
     );
     
     // addiplier & Additions results declaration
@@ -43,7 +42,6 @@ module mac_8(
     logic signed [16:0] res_add_0;
     logic signed [16:0] res_add_1;
     logic signed [17:0] res_add_2;
-    logic signed [31:0] res_add_3 = '0;
     
         
     // Multiplications
@@ -59,15 +57,6 @@ module mac_8(
     assign res_add_2 = res_add_0 + res_add_1;
     
     // Accumulator
-    always_ff @(posedge clk)
-    begin
-        if (reset == 0)
-            res_add_3 <= '0;
-        else
-            res_add_3 <= res_add_2 + res_add_3;
-    end
-    
-    // Output 
-    assign out = res_add_3;
-    
+    assign sum_out <= res_add_2 + sum_in;
+
 endmodule
