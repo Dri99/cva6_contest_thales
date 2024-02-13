@@ -57,6 +57,6 @@ module mac_8(
     assign res_add_2 = res_add_0 + res_add_1;
     
     // Accumulator
-    assign sum_out <= res_add_2 + sum_in;
+    assign sum_out = res_add_2 + sum_in;
 
 endmodule
