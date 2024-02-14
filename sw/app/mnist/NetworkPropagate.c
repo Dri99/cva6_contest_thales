@@ -64,7 +64,6 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
 #endif
 
     int iter = 0;
-    int tmpSum = 0;
     
 #ifdef UNROLLED // Version déroulée et vectorisée
     int i = 0;
@@ -92,7 +91,6 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
         weight = align32(weight1, weight2, offset_weights);
 
         *weightedSum += mac4b(input, weight);
-        tmpSum += mac4b(input, weight);
     }
 
     // Gère le dernier groupe d'éléments
