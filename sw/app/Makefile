@@ -97,7 +97,7 @@ RISCV_CFLAGS :=-DPERFORMANCE_RUN=1 \
 
 RISCV_LDFLAGS=-L./ -lcva6 -static -nostartfiles -T $(src_dir)/../bsp/config/link.ld
 
-X86_CFLAGS := -O2 -Wall -pedantic -DX86 -g -pg
+X86_CFLAGS := -O2 -Wall -pedantic -DX86 -g -pg -DUNROLLED
 
 
 incs  += -I$(src_dir)/../env -I$(src_dir)/common $(addprefix -I$(src_dir)/, $(bmarks))

@@ -33,7 +33,11 @@ static int clamp(int v, int lo, int hi) {
     }
 }
 
-SUM_T mac4b(unsigned inputs, int weights) {
+typedef uint32_t p4uint8_t;
+typedef int32_t p4int8_t;
+
+SUM_T mac4b(p4uint8_t inputs, p4int8_t weights)
+{
     SUM_T result = 0;
     for (int i = 0; i < 4; i++) {
         int input = (inputs << 24) >> 24;
@@ -45,7 +49,7 @@ SUM_T mac4b(unsigned inputs, int weights) {
     return result;
 }
 
-static inline unsigned align32(unsigned in1, unsigned in2, int offset)
+static inline p4uint8_t align32(p4uint8_t in1, p4uint8_t in2, int offset)
     // Fusionne deux registres 32-bits en prenant offset octets dans in1 et
     // (4 - offset) octets de in2. /!\ Suppose du petit-boutisme
     // Par example, avec offset=1 :
@@ -55,7 +59,7 @@ static inline unsigned align32(unsigned in1, unsigned in2, int offset)
     if (offset == 0) {
         return in1;
     } else {
-        return (in2  << (offset * 8)) | ((unsigned)in1  >> (32 - offset * 8));
+        return (in2 << (offset * 8)) | (in1 >> (32 - offset * 8));
     }
 }
 
@@ -73,14 +77,14 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
     
 #ifdef UNROLLED // Version déroulée et vectorisée
     int i = 0;
-    unsigned input1, input2, input;
-    int weight1, weight2, weight;
+    p4uint8_t input1, input2, input;
+    p4int8_t weight1, weight2, weight;
     
     // Aligne les accès mémoire sur 32 bits (4 octets)
-    unsigned* base_inputs = (unsigned*)((uintptr_t)inputs & (~(uintptr_t)(4-1)));
+    p4uint8_t* base_inputs = (p4uint8_t*)((uintptr_t)inputs & (~(uintptr_t)(4-1)));
     unsigned offset_inputs = ((uintptr_t)inputs) % 4;
     input2 = base_inputs[0];
-    int* base_weights = (int*)((uintptr_t)weights & (~(uintptr_t)(4-1)));
+    p4int8_t* base_weights = (p4int8_t*)((uintptr_t)weights & (~(uintptr_t)(4-1)));
     unsigned offset_weights = ((uintptr_t)weights) % 4;
     weight2 = base_weights[0];
 
