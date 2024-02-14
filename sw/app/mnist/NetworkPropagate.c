@@ -33,6 +33,26 @@ static int clamp(int v, int lo, int hi) {
     }
 }
 
+SUM_T mac4b(unsigned inputs, int weights) {
+    SUM_T result = 0;
+    for (int i = 0; i < 4; i++) {
+        int input = (inputs << 24) >> 24;
+        int weight = (weights << 24) >> 24;
+        result += input * weight;
+        inputs = inputs >> 8;
+        weights = weights >> 8;
+    }
+    return result;
+}
+
+static inline unsigned align32(unsigned in1, unsigned in2, int offset) {
+    if (offset == 0) {
+        return in1;
+    } else {
+        return (in2  << (offset * 8)) | ((unsigned)in1  >> (32 - offset * 8));
+    }
+}
+
 static inline void macsOnRange(const UDATA_T* __restrict inputs,
                         const WDATA_T* __restrict weights,
                         SUM_T* __restrict weightedSum,
@@ -42,19 +62,62 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
     macsOnRange_calls++;
     macsOnRange_time -= read_csr(mcycle);
 #endif
+
     int iter = 0;
-#ifdef UNROLLED
-    for (; iter < nb_iterations-3; iter+=4) {
-        *weightedSum += inputs[iter]   * weights[iter];
-        *weightedSum += inputs[iter+1] * weights[iter+1];
-        *weightedSum += inputs[iter+2] * weights[iter+2];
-        *weightedSum += inputs[iter+3] * weights[iter+3];
+    int tmpSum = 0;
+    
+#ifdef UNROLLED // Version déroulée et vectorisée
+    int i = 0;
+    unsigned input1, input2, input;
+    int weight1, weight2, weight;
+    
+    // Aligne les accès mémoire sur 32 bits (4 octets)
+    unsigned* base_inputs = (unsigned*)((uintptr_t)inputs & (~(uintptr_t)(4-1)));
+    unsigned offset_inputs = ((uintptr_t)inputs) % 4;
+    input2 = base_inputs[0];
+    int* base_weights = (int*)((uintptr_t)weights & (~(uintptr_t)(4-1)));
+    unsigned offset_weights = ((uintptr_t)weights) % 4;
+    weight2 = base_weights[0];
+
+    i = 1;
+    for (; iter < nb_iterations-4; i++, iter+=4) {
+        weight1 = weight2;
+        input1 = input2;
+        weight2 = base_weights[i];
+        input2 = base_inputs[i];
+
+         // Aligne les entrées sur 32-bits
+        input = align32(input1, input2, offset_inputs);
+        // Aligne les poids sur 32-bits
+        weight = align32(weight1, weight2, offset_weights);
+
+        *weightedSum += mac4b(input, weight);
+        tmpSum += mac4b(input, weight);
     }
-#endif
+
+    // Gère le dernier groupe d'éléments
+    weight1 = weight2;
+    input1 = input2;
+    weight2 = base_weights[i];
+    input2 = base_inputs[i];
+
+    // Aligne les entrées sur 32-bits
+    input = align32(input1, input2, offset_inputs);
+    // Aligne les poids sur 32-bits
+    weight = align32(weight1, weight2, offset_weights);
+    
+    // Masque les éléments au delà de nb_iterations
+    input = input & ((~0) >> ((4 - (nb_iterations - iter)) * 8));
+    
+    *weightedSum += mac4b(input, weight);
+
+#else
     for (; iter < nb_iterations; iter++) {
         *weightedSum += inputs[iter] * weights[iter];
     }
-#endif PROFILE_MACSONRANGE
+#endif
+
+#ifdef PROFILE_MACSONRANGE
     macsOnRange_time += read_csr(mcycle);
 #endif
 }
