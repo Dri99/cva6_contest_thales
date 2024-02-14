@@ -45,7 +45,13 @@ SUM_T mac4b(unsigned inputs, int weights) {
     return result;
 }
 
-static inline unsigned align32(unsigned in1, unsigned in2, int offset) {
+static inline unsigned align32(unsigned in1, unsigned in2, int offset)
+    // Fusionne deux registres 32-bits en prenant offset octets dans in1 et
+    // (4 - offset) octets de in2. /!\ Suppose du petit-boutisme
+    // Par example, avec offset=1 :
+    // | in1[3] in1[2] in1[1] in1[0] | in2[3] in2[2] in2[1] in2[0] |
+    // => | in2[2] in2[1] in2[0] in1[3] |
+{
     if (offset == 0) {
         return in1;
     } else {
@@ -85,7 +91,7 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
         weight2 = base_weights[i];
         input2 = base_inputs[i];
 
-         // Aligne les entrées sur 32-bits
+        // Aligne les entrées sur 32-bits
         input = align32(input1, input2, offset_inputs);
         // Aligne les poids sur 32-bits
         weight = align32(weight1, weight2, offset_weights);
