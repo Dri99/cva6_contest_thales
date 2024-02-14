@@ -27,3 +27,5 @@ $DOCKER run -ti --privileged \
         cd /util/gcc-toolchain-builder/ &&
         sudo ./build-toolchain.sh riscv_toolchain
         "
+DOCKER_ID=$($DOCKER ps -l --format "{{.ID}}")
+$DOCKER commit $DOCKER_ID sw-docker:v1
