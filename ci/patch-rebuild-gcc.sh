@@ -21,11 +21,13 @@ $DOCKER run -ti --privileged \
     /bin/bash -c "cd /util/gcc-toolchain-builder/src/binutils-gdb/ &&
         sudo chmod 644 include/opcode/riscv-opc.h &&
         sudo chmod 644 opcodes/riscv-opc.c &&
-        git apply /ci/patch-add-mac4b &&
+        sudo git apply /ci/patch-add-mac4b &&
         sudo chmod 755 include/opcode/riscv-opc.h &&
         sudo chmod 755 opcodes/riscv-opc.c &&
         cd /util/gcc-toolchain-builder/ &&
         sudo ./build-toolchain.sh riscv_toolchain
+        umount /ci
+        sudo rm -rf /ci 
         "
 DOCKER_ID=$($DOCKER ps -l --format "{{.ID}}")
 $DOCKER commit $DOCKER_ID sw-docker:v1
