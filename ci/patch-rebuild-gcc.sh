@@ -1,6 +1,6 @@
 #!/bin/bash
 DOCKER=docker
-if ! command -v docekr &> /dev/null
+if ! command -v docker &> /dev/null
 then
     echo "docker could not be found, trying podman"
     if ! command -v podman &> /dev/null
