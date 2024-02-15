@@ -47,6 +47,10 @@ SUM_T mac4b(p4uint8_t inputs, p4int8_t weights)
         weights = weights >> 8;
     }
     return result;
+    // asm volatile ( "mac4b %0, %1, %2"
+    //                : "=r"(partial_sum)
+    //                : "r"(input_pack), "r"(weight_pack)
+    //     );
 }
 
 static inline p4uint8_t align32(p4uint8_t in1, p4uint8_t in2, int offset)

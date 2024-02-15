@@ -1,0 +1,60 @@
+main 
+|
+|   ->read_stimulus()
+|   ->process_input()
+        |
+        |   ->propagate()
+                |
+                |   ->convcellPropagate1()
+                |   ->convcellPropagate1()
+                |   ->fccellPropagateUDATA_T()
+                |   ->fccellPropagateDATA_T()
+                |   ->maxPropagate1()
+        
+
+All for constraints defined in:
+conv1.h
+conv2.h
+fc1.h
+fc2.h
+
+convcellPropagate1 - call 1
+OUTPUTS_HEIGHT = 1
+OUTPUTS_WIDTH = 1
+NB_OUTPUTS = 16
+KERNEL_HEIGHT = 4
+KERNEL_WIDTH = 4
+NB_CHANNELS = 1
+
+convcellPropagate1 - call 2
+OUTPUTS_HEIGHT = 4
+OUTPUTS_WIDTH = 4
+NB_OUTPUTS = 24
+KERNEL_HEIGHT = 5
+KERNEL_WIDTH = 5
+CONV2_NB_CHANNELS 16
+
+for (int oy = 0; oy < OUTPUTS_HEIGHT = ; ++oy) {
+        ...
+    for (int ox = 0; ox < OUTPUTS_WIDTH; ++ox) {
+        for (int output = 0; output < NB_OUTPUTS; ++output) {
+            ...
+            for (int sy = 0; sy < KERNEL_HEIGHT; ++sy) {
+                ...
+                if (condition on line 164) {
+                    macsOnRange() KERNEL_WIDTH * NB_CHANNELS
+                } else {
+                    for (int sx = 0; sx < KERNEL_WIDTH; ++sx) {
+                        macsOnRange() NB_CHANNELS
+                    }
+                }
+            }
+
+            outputs[oOffset + output]
+                = sat(weightedSum, output, ACTIVATION, rescaling);
+        }
+    }
+}
+
+fccellPropagateUDATA_T() 
+
