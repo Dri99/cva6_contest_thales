@@ -25,6 +25,7 @@ $DOCKER run -ti --privileged \
         sudo chmod 755 include/opcode/riscv-opc.h &&
         sudo chmod 755 opcodes/riscv-opc.c &&
         cd /util/gcc-toolchain-builder/ &&
+        sudo chmod a+x build-toolchain.sh &&
         sudo ./build-toolchain.sh riscv_toolchain
         umount /ci
         sudo rm -rf /ci 
