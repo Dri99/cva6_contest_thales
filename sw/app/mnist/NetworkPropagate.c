@@ -39,18 +39,18 @@ typedef int32_t p4int8_t;
 SUM_T mac4b(p4uint8_t inputs, p4int8_t weights)
 {
     SUM_T result = 0;
-    for (int i = 0; i < 4; i++) {
-        int input = (inputs << 24) >> 24;
-        int weight = (weights << 24) >> 24;
-        result += input * weight;
-        inputs = inputs >> 8;
-        weights = weights >> 8;
-    }
+    asm volatile ( "mac4b %0, %1, %2"
+                   : "=r"(result)
+                   : "r"(inputs), "r"(weights)
+        );
+    /* for (int i = 0; i < 4; i++) { */
+    /*     int input = (inputs << 24) >> 24; */
+    /*     int weight = (weights << 24) >> 24; */
+    /*     result += input * weight; */
+    /*     inputs = inputs >> 8; */
+    /*     weights = weights >> 8; */
+    /* } */
     return result;
-    // asm volatile ( "mac4b %0, %1, %2"
-    //                : "=r"(partial_sum)
-    //                : "r"(input_pack), "r"(weight_pack)
-    //     );
 }
 
 static inline p4uint8_t align32(p4uint8_t in1, p4uint8_t in2, int offset)
@@ -123,7 +123,7 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
     
     *weightedSum += mac4b(input, weight);
 
-#else
+#else // Version originale
     for (; iter < nb_iterations; iter++) {
         *weightedSum += inputs[iter] * weights[iter];
     }
