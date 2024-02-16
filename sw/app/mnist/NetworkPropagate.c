@@ -10,9 +10,15 @@
 #include "fc1.h"
 #include "fc2.h"
 
+#define PROFILE_ALIGN32
+
 #ifdef PROFILE_MACSONRANGE
 extern size_t macsOnRange_time;
 extern int macsOnRange_calls;
+#endif
+#ifdef PROFILE_ALIGN32
+extern size_t align32_time;
+extern size_t align32_count;
 #endif
 
 static DATA_T mem[MEMORY_SIZE];
@@ -36,7 +42,7 @@ static int clamp(int v, int lo, int hi) {
 typedef uint32_t p4uint8_t;
 typedef int32_t p4int8_t;
 
-SUM_T mac4b(p4uint8_t inputs, p4int8_t weights)
+static inline SUM_T mac4b(p4uint8_t inputs, p4int8_t weights)
 {
     SUM_T result = 0;
     asm volatile ( "mac4b %0, %1, %2"
@@ -60,12 +66,26 @@ static inline p4uint8_t align32(p4uint8_t in1, p4uint8_t in2, int offset)
     // | in1[3] in1[2] in1[1] in1[0] | in2[3] in2[2] in2[1] in2[0] |
     // => | in2[2] in2[1] in2[0] in1[3] |
 {
+    p4uint8_t result;
     if (offset == 0) {
-        return in1;
+        // Un décalage par 32 est indéfini par le standard, alors on précise
+        // le cas particulier. Heureusement, le compilateur est suffisamment
+        // intelligent et ne génère pas de saut.
+        result = in1;
     } else {
-        return (in2 << (offset * 8)) | (in1 >> (32 - offset * 8));
+#       ifdef PROFILE_ALIGN32
+        // Compte le nombre d'appels pour lesquels offset n'est pas une constante
+        align32_count++;
+        align32_time -= read_csr(mcycle);
+#       endif
+        result = (in2 << (offset * 8)) | (in1 >> (32 - offset * 8));
+#       ifdef PROFILE_ALIGN32
+        align32_time += read_csr(mcycle);
+#       endif
     }
+    return result;
 }
+
 
 static inline void macsOnRange(const UDATA_T* __restrict inputs,
                         const WDATA_T* __restrict weights,
@@ -87,15 +107,13 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
     // Aligne les accès mémoire sur 32 bits (4 octets)
     p4uint8_t* base_inputs = (p4uint8_t*)((uintptr_t)inputs & (~(uintptr_t)(4-1)));
     unsigned offset_inputs = ((uintptr_t)inputs) % 4;
-    input2 = base_inputs[0];
+    input1 = base_inputs[0];
     p4int8_t* base_weights = (p4int8_t*)((uintptr_t)weights & (~(uintptr_t)(4-1)));
     unsigned offset_weights = ((uintptr_t)weights) % 4;
-    weight2 = base_weights[0];
+    weight1 = base_weights[0];
 
     i = 1;
     for (; iter < nb_iterations-4; i++, iter+=4) {
-        weight1 = weight2;
-        input1 = input2;
         weight2 = base_weights[i];
         input2 = base_inputs[i];
 
@@ -105,11 +123,12 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
         weight = align32(weight1, weight2, offset_weights);
 
         *weightedSum += mac4b(input, weight);
+
+        weight1 = weight2;
+        input1 = input2;
     }
 
     // Gère le dernier groupe d'éléments
-    weight1 = weight2;
-    input1 = input2;
     weight2 = base_weights[i];
     input2 = base_inputs[i];
 

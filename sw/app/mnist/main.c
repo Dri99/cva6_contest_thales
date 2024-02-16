@@ -11,6 +11,8 @@
 
 size_t macsOnRange_time = 0;
 int macsOnRange_calls = 0;
+size_t align32_time = 0;
+size_t align32_count = 0;
 
 void readStimulus(
                   UDATA_T* inputBuffer,
@@ -74,8 +76,8 @@ int main(int argc, char* argv[]) {
     write_csr(mhpmevent4, HPM_L1_DCACHE_MISSES);
     write_csr(mhpmevent5, HPM_LOADS);
     write_csr(mhpmevent6, HPM_STORES);
-    write_csr(mhpmevent7, HPM_STALL);
-    write_csr(mhpmevent8, HPM_MSB_FULL);
+    write_csr(mhpmevent7, HPM_BRANCHS);
+    write_csr(mhpmevent8, HPM_BRANCH_MIS);
 
     il1_miss = -read_csr(mhpmcounter3);
     dl1_miss = -read_csr(mhpmcounter4);
@@ -126,6 +128,8 @@ int main(int argc, char* argv[]) {
 
     printf("macsOnRange calls : %d\n", macsOnRange_calls);
     printf("macsOnRange cycles : %d\n", (int)macsOnRange_time);
+    printf("align32 count : %d\n", (int)align32_count);
+    printf("align32 cycles : %d\n", (int)align32_time);
 
 #ifdef OUTPUTFILE
     FILE *f = fopen("success_rate.txt", "w");
