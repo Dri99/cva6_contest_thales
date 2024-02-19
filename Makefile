@@ -222,8 +222,11 @@ src :=  core/include/$(target)_config_pkg.sv                                    
 
 src := $(addprefix $(root-dir), $(src))
 
-copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \
-             $(wildcard core/cvxif_example/*.sv)
+# copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \
+#              $(wildcard core/cvxif_example/*.sv)
+# copro_src := $(addprefix $(root-dir), $(copro_src))
+copro_src := core/coprocessor_MAC/include/cvxif_instr_pkg.sv \
+             $(wildcard core/coprocessor_MAC/*.sv)
 copro_src := $(addprefix $(root-dir), $(copro_src))
 
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
@@ -642,6 +645,8 @@ corev_apu/fpga/scripts/add_sources.tcl:
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src_flist))}		>> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(copro_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
+	
 
 fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)
 	@echo "[FPGA] Generate sources"
@@ -663,7 +668,7 @@ cva6_ooc: $(ariane_pkg) $(util) $(src) $(fpga_src) $(src_flist) corev_apu/fpga/s
 .PHONY:  cva6_ooc cva6_fpga program_cva6_fpga
 
 
-cva6_fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(src_flist) corev_apu/fpga/scripts/add_sources.tcl
+cva6_fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(src_flist) $(copro_src) corev_apu/fpga/scripts/add_sources.tcl
 
 	cd corev_apu/fpga && make cva6_fpga BRAM=1 PS7_DDR=0 XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS) BATCH_MODE=$(BATCH_MODE) FPGA=1
 

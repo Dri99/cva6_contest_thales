@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module mac_8(
+module mac4b(
     input unsigned [7:0] in_0,
     input unsigned [7:0] in_1,
     input unsigned [7:0] in_2,
