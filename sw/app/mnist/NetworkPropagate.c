@@ -33,18 +33,22 @@ static void macsOnRange(const UDATA_T* __restrict inputs,
                         SUM_T* __restrict weightedSum,
                         int nb_iterations)
 {
-
-    for (int iter = 0; iter < nb_iterations/4; iter+=4) {
+    SUM_T input_pack, weight_pack, partial_sum;
+    int iter;
+    for (iter = 0; iter < nb_iterations; iter+=4) {
         //*weightedSum += inputs[iter] * weights[iter];
-        int input_pack = *(int*)(&inputs[iter]);
-        int weight_pack = *(int*)(&weights[iter]);
-        int partial_sum;
+        input_pack = *(SUM_T*)(&inputs[iter]);
+        weight_pack = *(SUM_T*)(&weights[iter]);
         asm volatile ( "mac4b %0, %1, %2"
             : "=r"(partial_sum)
             : "r"(input_pack), "r"(weight_pack)
         );
-        weightedSum+=partial_sum;
+        *weightedSum+=partial_sum;
     }
+
+    // Epilogue
+    for (; iter < nb_iterations; iter++)
+        *weightedSum += inputs[iter] * weights[iter]; 
 }
 
 static UDATA_T saturate(SUM_T value, uint32_t sat) {

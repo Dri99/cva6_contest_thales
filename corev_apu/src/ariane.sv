@@ -74,8 +74,8 @@ module ariane import ariane_pkg::*; #(
     .noc_resp_i           ( noc_resp_i                )
   );
 
-  if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
-    cvxif_example_coprocessor i_cvxif_coprocessor (
+  if (CVA6Cfg.CvxifEn) begin : gen_mac4b_coprocessor
+    cvxif_mac4b_coprocessor i_cvxif_coprocessor (
       .clk_i                ( clk_i                          ),
       .rst_ni               ( rst_ni                         ),
       .cvxif_req_i          ( cvxif_req                      ),

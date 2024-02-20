@@ -19,7 +19,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module mac4b(
+module mac4b_with_input(
     input unsigned [7:0] in_0,
     input unsigned [7:0] in_1,
     input unsigned [7:0] in_2,
@@ -28,6 +28,7 @@ module mac4b(
     input signed [7:0] weight_1,
     input signed [7:0] weight_2,
     input signed [7:0] weight_3,
+    input signed [31:0] sum_in,
     output signed [31:0] sum_out
     );
     
@@ -39,6 +40,7 @@ module mac4b(
     
     logic signed [16:0] res_add_0;
     logic signed [16:0] res_add_1;
+    logic signed [17:0] res_add_2;
     
         
     // Multiplications
@@ -51,7 +53,9 @@ module mac4b(
     assign res_add_0 = res_mult_0 + res_mult_1;
     assign res_add_1 = res_mult_2 + res_mult_3;
     
+    assign res_add_2 = res_add_0 + res_add_1;
+    
     // Accumulator
-    assign sum_out = res_add_0 + res_add_1;
+    assign sum_out = res_add_2 + sum_in;
 
 endmodule

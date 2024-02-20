@@ -225,7 +225,7 @@ src := $(addprefix $(root-dir), $(src))
 # copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \
 #              $(wildcard core/cvxif_example/*.sv)
 # copro_src := $(addprefix $(root-dir), $(copro_src))
-copro_src := core/coprocessor_MAC/include/cvxif_instr_pkg.sv \
+copro_src := core/coprocessor_MAC/include/cvxif_mac4b_instr_pkg.sv \
              $(wildcard core/coprocessor_MAC/*.sv)
 copro_src := $(addprefix $(root-dir), $(copro_src))
 
@@ -669,6 +669,11 @@ cva6_ooc: $(ariane_pkg) $(util) $(src) $(fpga_src) $(src_flist) corev_apu/fpga/s
 
 
 cva6_fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(src_flist) $(copro_src) corev_apu/fpga/scripts/add_sources.tcl
+
+	cd corev_apu/fpga && make cva6_fpga BRAM=1 PS7_DDR=0 XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS) BATCH_MODE=$(BATCH_MODE) FPGA=1
+
+cva6_fpga_mac4b: target := cv32a6_mac_fpga
+cva6_fpga_mac4b: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(src_flist) $(copro_src) corev_apu/fpga/scripts/add_sources.tcl
 
 	cd corev_apu/fpga && make cva6_fpga BRAM=1 PS7_DDR=0 XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS) BATCH_MODE=$(BATCH_MODE) FPGA=1
 
