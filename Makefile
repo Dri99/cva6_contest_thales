@@ -672,7 +672,7 @@ cva6_fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(src_flist) $(c
 
 	cd corev_apu/fpga && make cva6_fpga BRAM=1 PS7_DDR=0 XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS) BATCH_MODE=$(BATCH_MODE) FPGA=1
 
-cva6_fpga_mac4b: target := cv32a6_mac_fpga
+cva6_fpga_mac4b: target = cv32a6_mac_fpga
 cva6_fpga_mac4b: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(src_flist) $(copro_src) corev_apu/fpga/scripts/add_sources.tcl
 
 	cd corev_apu/fpga && make cva6_fpga BRAM=1 PS7_DDR=0 XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS) BATCH_MODE=$(BATCH_MODE) FPGA=1

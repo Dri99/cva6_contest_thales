@@ -55,6 +55,10 @@ module id_register
 	always_comb begin : register_output
 		data_o 	= data_mem[id_out_i];
 		rd_o 	= rd_mem[id_out_i]; 
+		if (id_in_i == id_out_i) begin	//Not convinced of this part, might delete later
+			data_o 	= data_i;
+			rd_o	= rd_i;
+		end
 	end
 
 endmodule

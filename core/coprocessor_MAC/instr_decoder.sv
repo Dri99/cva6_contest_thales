@@ -41,7 +41,7 @@ module instr_decoder_mac4b
         x_issue_resp_o.dualread  = CoproInstr[i].resp.dualread;
         x_issue_resp_o.loadstore = CoproInstr[i].resp.loadstore;
         x_issue_resp_o.exc       = CoproInstr[i].resp.exc;
-        rd_o[4:0]                = CoproInstr[i].instr[11:7];       // Retrieve destination register address
+        rd_o[4:0]                = x_issue_req_i.instr[11:7];       // Retrieve destination register address
       end
     end
   end
