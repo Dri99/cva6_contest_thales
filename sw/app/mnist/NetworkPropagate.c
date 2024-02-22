@@ -10,7 +10,7 @@
 #include "fc1.h"
 #include "fc2.h"
 
-#define PROFILE_ALIGN32
+//#define PROFILE_ALIGN32
 
 #ifdef PROFILE_MACSONRANGE
 extern size_t macsOnRange_time;
@@ -45,7 +45,7 @@ typedef int32_t p4int8_t;
 static inline SUM_T mac4b(p4uint8_t inputs, p4int8_t weights)
 {
     SUM_T result = 0;
-    asm volatile ( "mac4b %0, %1, %2"
+    asm volatile ( "add %0, %1, %2"
                    : "=r"(result)
                    : "r"(inputs), "r"(weights)
         );
