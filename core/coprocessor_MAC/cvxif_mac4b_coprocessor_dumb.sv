@@ -117,43 +117,43 @@ module cvxif_mac4b_coprocessor
     // Commit interface (nothing to do since there is no output signal)
   
     // Result interface
-    // x_result_valid_o   = x_issue_resp_o.accept & x_issue_valid_i;
-    // x_result_o.id      = x_issue_req_i.id;
-    // x_result_o.data    = mac_sum;
-    // x_result_o.rd      = rd;
-    // x_result_o.we      = 1;
-    // x_result_o.exc     = 0;
-    // x_result_o.exccode = 0;
+    x_result_valid_o   = x_issue_resp_o.accept;
+    x_result_o.id      = x_issue_req_i.id;
+    x_result_o.data    = mac_sum;
+    x_result_o.rd      = rd;
+    x_result_o.we      = 1;
+    x_result_o.exc     = 0;
+    x_result_o.exccode = 0;
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-		if (!rst_ni) begin 
-			x_result_valid_o   <= 0;
-      x_result_o.id      <= '0;
-      x_result_o.data    <= '0;
-      x_result_o.rd      <= '0;
-      x_result_o.we      <= '0;
-      x_result_o.exc     <= '0;
-      x_result_o.exccode <= '0;
-		end else begin
-			if (x_issue_resp_o.accept) begin
-        x_result_valid_o   <= '1;
-        x_result_o.id      <= x_issue_req_i.id;
-        x_result_o.data    <= mac_sum;
-        x_result_o.rd      <= rd;
-        x_result_o.we      <= '1;
-        x_result_o.exc     <= '0;
-        x_result_o.exccode <= '0;
-      end else begin
-        x_result_valid_o   <= '0;
-        x_result_o.id      <= '0;
-        x_result_o.data    <= '0;
-        x_result_o.rd      <= '0;
-        x_result_o.we      <= '0;
-        x_result_o.exc     <= '0;
-        x_result_o.exccode <= '0;
-      end
-		end
-	end
+  // always_ff @(posedge clk_i or negedge rst_ni) begin
+	// 	if (!rst_ni) begin 
+	// 		x_result_valid_o   <= 0;
+  //     x_result_o.id      <= '0;
+  //     x_result_o.data    <= '0;
+  //     x_result_o.rd      <= '0;
+  //     x_result_o.we      <= '0;
+  //     x_result_o.exc     <= '0;
+  //     x_result_o.exccode <= '0;
+	// 	end else begin
+	// 		if (x_issue_resp_o.accept) begin
+  //       x_result_valid_o   <= '1;
+  //       x_result_o.id      <= x_issue_req_i.id;
+  //       x_result_o.data    <= mac_sum;
+  //       x_result_o.rd      <= rd;
+  //       x_result_o.we      <= '1;
+  //       x_result_o.exc     <= '0;
+  //       x_result_o.exccode <= '0;
+  //     end else begin
+  //       x_result_valid_o   <= '0;
+  //       x_result_o.id      <= '0;
+  //       x_result_o.data    <= '0;
+  //       x_result_o.rd      <= '0;
+  //       x_result_o.we      <= '0;
+  //       x_result_o.exc     <= '0;
+  //       x_result_o.exccode <= '0;
+  //     end
+	// 	end
+	// end
 
 endmodule
