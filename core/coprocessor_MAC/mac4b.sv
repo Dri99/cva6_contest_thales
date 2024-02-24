@@ -42,10 +42,10 @@ module mac4b(
     
         
     // Multiplications
-    assign res_mult_0 = in_0 * weight_0;
-    assign res_mult_1 = in_1 * weight_1;
-    assign res_mult_2 = in_2 * weight_2;
-    assign res_mult_3 = in_3 * weight_3;
+    assign res_mult_0 = $signed({1'b0, in_0}) * weight_0;
+    assign res_mult_1 = $signed({1'b0, in_1}) * weight_1;
+    assign res_mult_2 = $signed({1'b0, in_2}) * weight_2;
+    assign res_mult_3 = $signed({1'b0, in_3}) * weight_3;
     
     // Additions
     assign res_add_0 = res_mult_0 + res_mult_1;
