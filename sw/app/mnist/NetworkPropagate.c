@@ -11,6 +11,8 @@
 #include "fc2.h"
 
 //#define PROFILE_ALIGN32
+//#define PROFILE_MACSONRANGE
+#define MAC4B
 
 #ifdef PROFILE_MACSONRANGE
 extern size_t macsOnRange_time;
@@ -45,17 +47,21 @@ typedef int32_t p4int8_t;
 static inline SUM_T mac4b(p4uint8_t inputs, p4int8_t weights)
 {
     SUM_T result = 0;
+    
+#   ifdef MAC4B
     asm volatile ( "mac4b %0, %1, %2"
                    : "=r"(result)
                    : "r"(inputs), "r"(weights)
         );
-    /* for (int i = 0; i < 4; i++) { */
-    /*     int input = (inputs << 24) >> 24; */
-    /*     int weight = (weights << 24) >> 24; */
-    /*     result += input * weight; */
-    /*     inputs = inputs >> 8; */
-    /*     weights = weights >> 8; */
-    /* } */
+#   else
+    for (int i = 0; i < 4; i++) {
+        int input = (inputs << 24) >> 24;
+        int weight = (weights << 24) >> 24;
+        result += input * weight;
+        inputs = inputs >> 8;
+        weights = weights >> 8;
+    }
+#   endif
     return result;
 }
 
