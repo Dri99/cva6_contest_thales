@@ -54,7 +54,8 @@ bmarks = \
 	dhrystone \
 	spmv \
 	pmp \
-	mnist
+	mnist \
+	test-mac4b
 
 #--------------------------------------------------------------------
 # Build rules
