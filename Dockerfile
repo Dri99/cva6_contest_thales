@@ -43,6 +43,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 
 COPY ./util util
+COPY ./ci ci
 
 WORKDIR util
 
@@ -107,13 +108,18 @@ ENV PATH="$PATH:/util/riscv-openocd/build/bin"
 RUN echo "ATTRS{idVendor}==\"0403\", ATTRS{idProduct}==\"6014\", MODE=\"660\", GROUP=\"plugdev\", TAG+=\"uaccess\"" > /etc/udev/rules.d/60-openocd.rules
 
 
-# install RISCV toolchain
+# install patched RISCV toolchain
 RUN export RISCV=riscv_toolchain && \
     cd gcc-toolchain-builder && \
     ls -al && \
     bash ./get-toolchain.sh && \
+    cd /util/gcc-toolchain-builder/src/binutils-gdb/ && \
+    git apply /ci/patch-add-mac4b && \
+    cd /util/gcc-toolchain-builder/ && \
     bash ./build-toolchain.sh $RISCV
 
+# delete ci dir
+RUN rm -rf /ci
 
 ENV PATH="$PATH:/util/gcc-toolchain-builder/riscv_toolchain/bin"
 
