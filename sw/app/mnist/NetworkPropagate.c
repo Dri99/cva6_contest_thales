@@ -48,13 +48,13 @@ static int clamp(int v, int lo, int hi) {
 typedef uint32_t p4uint8_t;
 typedef int32_t p4int8_t;
 
-static inline SUM_T mac4b(p4uint8_t inputs, p4int8_t weights)
+static inline SUM_T mac4b(SUM_T result, p4uint8_t inputs, p4int8_t weights)
 {
-    SUM_T result = 0;
+    //SUM_T result = 0;
     
 #   ifdef MAC4B
     asm inline ( "mac4b %0, %1, %2"
-                   : "=r"(result)
+                   : "+r"(result)
                    : "r"(inputs), "r"(weights)
         );
 #   else
@@ -132,7 +132,7 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
         // Aligne les poids sur 32-bits
         weight = align32(weight1, weight2, offset_weights);
 
-        *weightedSum += mac4b(input, weight);
+        *weightedSum = mac4b(*weightedSum, input, weight);
 
         weight1 = weight2;
         input1 = input2;
@@ -150,7 +150,7 @@ static inline void macsOnRange(const UDATA_T* __restrict inputs,
     // Masque les éléments au delà de nb_iterations
     input = input & ((~0) >> ((4 - (nb_iterations - iter)) * 8));
     
-    *weightedSum += mac4b(input, weight);
+    *weightedSum = mac4b(*weightedSum, input, weight);
 
 #else // Version originale
     for (; iter < nb_iterations; iter++) {
