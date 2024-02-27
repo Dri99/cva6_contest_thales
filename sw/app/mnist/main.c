@@ -9,10 +9,14 @@
 
 #include "hpm.h"
 
+#ifdef BENCHMARK
 size_t macsOnRange_time = 0;
 int macsOnRange_calls = 0;
 size_t align32_time = 0;
 size_t align32_count = 0;
+
+size_t time_conv1, time_conv2, time_fc1, time_fc2, time_max;
+#endif // BENCHMARK
 
 void readStimulus(
                   UDATA_T* inputBuffer,
@@ -53,10 +57,12 @@ int processInput(        UDATA_T* inputBuffer,
 int main(int argc, char* argv[]) {
 
     // const N2D2::Network network{};
+#ifdef BENCHMARK
     size_t instret, cycles;
     size_t il1_miss, dl1_miss;
     size_t loads, stores;
     size_t stalls, sb_full;
+#endif // BENCHMARK
 
 #if ENV_DATA_UNSIGNED
     UDATA_T inputBuffer[ENV_SIZE_Y*ENV_SIZE_X*ENV_NB_OUTPUTS];
@@ -69,8 +75,9 @@ int main(int argc, char* argv[]) {
     UDATA_T output_value;
 
     readStimulus(inputBuffer, expectedOutputBuffer);
-    
+
 #ifndef X86
+#ifdef BENCHMARK
     // Active les compteurs de performance
     write_csr(mhpmevent3, HPM_L1_ICACHE_MISSES);
     write_csr(mhpmevent4, HPM_L1_DCACHE_MISSES);
@@ -85,33 +92,32 @@ int main(int argc, char* argv[]) {
     stores = -read_csr(mhpmcounter6);
     stalls = -read_csr(mhpmcounter7);
     sb_full = -read_csr(mhpmcounter8);
+#endif // BENCHMARK
     
     instret = -read_csr(minstret);
     cycles = -read_csr(mcycle);
-#endif
+#endif // not X86
 
     int success;
-#ifdef X86
-    for (int i=0; i<1; i++) {
-#endif
+    
     success = processInput(inputBuffer, 
                                      expectedOutputBuffer, 
                                      predictedOutputBuffer,
                                      &output_value);
-#ifdef X86
-    }
-#endif
+
 #ifndef X86
     instret += read_csr(minstret);
     cycles += read_csr(mcycle);
 
+#ifdef BENCHMARK
     il1_miss += read_csr(mhpmcounter3);
     dl1_miss += read_csr(mhpmcounter4);
     loads += read_csr(mhpmcounter5);
     stores += read_csr(mhpmcounter6);
     stalls += read_csr(mhpmcounter7);
     sb_full += read_csr(mhpmcounter8);
-#endif
+#endif // BENCHMARK
+#endif // not X86
 
     printf("Expected  = %d\n", expectedOutputBuffer[0]);
     printf("Predicted = %d\n", predictedOutputBuffer[0]);
@@ -119,6 +125,7 @@ int main(int argc, char* argv[]) {
     printf("credence: %d\n", output_value);
     printf("image %s: %d instructions\n", stringify(MNIST_INPUT_IMAGE), (int)(instret));
     printf("image %s: %d cycles\n", stringify(MNIST_INPUT_IMAGE), (int)(cycles));
+#ifdef BENCHMARK
     printf("il1_miss : %d\n", (int)il1_miss);
     printf("dl1_miss : %d\n", (int)dl1_miss);
     printf("loads : %d\n", (int)loads);
@@ -130,6 +137,13 @@ int main(int argc, char* argv[]) {
     printf("macsOnRange cycles : %d\n", (int)macsOnRange_time);
     printf("align32 count : %d\n", (int)align32_count);
     printf("align32 cycles : %d\n", (int)align32_time);
+
+    printf("conv1 %d cycles\n", time_conv1);
+    printf("conv2 %d cycles\n", time_conv2);
+    printf("fc1 %d cycles\n", time_fc1);
+    printf("fc2 %d cycles\n", time_fc2);
+    printf("max %d cycles\n", time_max);
+#endif // BENCHMARK
 
 #ifdef OUTPUTFILE
     FILE *f = fopen("success_rate.txt", "w");

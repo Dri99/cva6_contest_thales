@@ -14,6 +14,7 @@
 //#define PROFILE_MACSONRANGE
 #define MAC4B
 
+#ifdef BENCHMARK
 #ifdef PROFILE_MACSONRANGE
 extern size_t macsOnRange_time;
 extern int macsOnRange_calls;
@@ -22,6 +23,9 @@ extern int macsOnRange_calls;
 extern size_t align32_time;
 extern size_t align32_count;
 #endif
+
+extern size_t time_conv1, time_conv2, time_fc1, time_fc2, time_max;
+#endif // BENCHMARK
 
 static DATA_T mem[MEMORY_SIZE];
 
@@ -552,7 +556,7 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     UDATA_T* conv1_output = (UDATA_T*) mem + CONV1_MEM_CONT_OFFSET;
 
 #ifdef BENCHMARK
-    const Tick_T start_conv1 = tick();
+    time_conv1 = -read_csr(mcycle);
 #endif
 
     convcellPropagate1(inputs , conv1_output, conv1_biases, conv1_weights, 8,
@@ -564,9 +568,7 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     //convcellPropagate1(inputs , conv1_output, conv1_biases, conv1_weights, CONV1_SCALING);
 
 #ifdef BENCHMARK
-    const Tick_T end_conv1 = tick();
-    static RunningMean_T conv1_timing = {0.0, 0};
-    benchmark("conv1", start_conv1, end_conv1, conv1_timing);
+    time_conv1 += read_csr(mcycle);
 #endif
 
 #ifdef SAVE_OUTPUTS
@@ -582,7 +584,7 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     UDATA_T* conv2_output = (UDATA_T*) mem + CONV2_MEM_CONT_OFFSET;
 
 #ifdef BENCHMARK
-    const Tick_T start_conv2 = tick();
+    time_conv2 = -read_csr(mcycle);
 #endif
 
     convcellPropagate1(conv1_output , conv2_output, conv2_biases, conv2_weights, 8,
@@ -597,9 +599,7 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     //convcellPropagate2(conv1_output , conv2_output, conv2_biases, conv2_weights, CONV2_SCALING);
 
 #ifdef BENCHMARK
-    const Tick_T end_conv2 = tick();
-    static RunningMean_T conv2_timing = {0.0, 0};
-    benchmark("conv2", start_conv2, end_conv2, conv2_timing);
+    time_conv2 += read_csr(mcycle);
 #endif
 
 #ifdef SAVE_OUTPUTS
@@ -615,7 +615,7 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     UDATA_T* fc1_output = (UDATA_T*) mem + FC1_MEM_CONT_OFFSET;
 
 #ifdef BENCHMARK
-    const Tick_T start_fc1 = tick();
+    time_fc1 = -read_csr(mcycle);
 #endif
 
     fccellPropagateUDATA_T(conv2_output , fc1_output, fc1_biases, fc1_weights, 8,
@@ -628,9 +628,7 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     FC1_MEM_CONT_SIZE, FC1_MEM_WRAP_OFFSET, FC1_MEM_WRAP_SIZE, FC1_MEM_STRIDE);
 
 #ifdef BENCHMARK
-    const Tick_T end_fc1 = tick();
-    static RunningMean_T fc1_timing = {0.0, 0};
-    benchmark("fc1", start_fc1, end_fc1, fc1_timing);
+    time_fc1 += read_csr(mcycle);
 #endif
 
 #ifdef SAVE_OUTPUTS
@@ -646,7 +644,7 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     DATA_T* fc2_output = (DATA_T*) mem + FC2_MEM_CONT_OFFSET;
 
 #ifdef BENCHMARK
-    const Tick_T start_fc2 = tick();
+    time_fc2 = -read_csr(mcycle);
 #endif
 
     fccellPropagateDATA_T(fc1_output , fc2_output, fc2_biases, fc2_weights, 11,
@@ -660,9 +658,7 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     FC2_MEM_WRAP_OFFSET, FC2_MEM_WRAP_SIZE, FC2_MEM_STRIDE);
 
 #ifdef BENCHMARK
-    const Tick_T end_fc2 = tick();
-    static RunningMean_T fc2_timing = {0.0, 0};
-    benchmark("fc2", start_fc2, end_fc2, fc2_timing);
+    time_fc2 += read_csr(mcycle);
 #endif
 
 #ifdef SAVE_OUTPUTS
@@ -671,7 +667,15 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
     fclose(fc2_stream);
 #endif
 
+#ifdef BENCHMARK
+    time_max = -read_csr(mcycle);
+#endif
+
     maxPropagate1(fc2_output, outputs, maxPropagate_val, FC2_NB_OUTPUTS, FC2_OUTPUTS_HEIGHT, FC2_OUTPUTS_WIDTH, FC2_MEM_CONT_OFFSET, FC2_MEM_CONT_SIZE, FC2_MEM_WRAP_OFFSET, FC2_MEM_WRAP_SIZE, FC2_MEM_STRIDE);
+
+#ifdef BENCHMARK
+    time_max += read_csr(mcycle);
+#endif
 
 #ifdef SAVE_OUTPUTS
     FILE* max_stream = fopen("max_output.txt", "w");
