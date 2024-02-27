@@ -51,6 +51,9 @@ module cvxif_mac4b_coprocessor
   //Data signals
   logic [31:0]        rs1;
   logic [31:0]        rs2;
+  if (X_NUM_RS == 3) begin : third_operand
+    logic [31:0]        rs3;
+  end
   logic [31:0]        mac_sum;
 
 
@@ -97,18 +100,37 @@ module cvxif_mac4b_coprocessor
   // Get RS values, assign them as MAC4B inputs
   assign rs1 = x_issue_req_i.rs[0];     // First operand are the INPUTS
   assign rs2 = x_issue_req_i.rs[1];     // Second operand are the WEIGHTS
-  mac4b mac_init 
-  (
-      .in_0     (rs1[7:0]),
-      .in_1     (rs1[15:8]),
-      .in_2     (rs1[23:16]),
-      .in_3     (rs1[31:24]),
-      .weight_0 (rs2[7:0]),
-      .weight_1 (rs2[15:8]),
-      .weight_2 (rs2[23:16]),
-      .weight_3 (rs2[31:24]),
-      .sum_out  (mac_sum)
-  );
+
+  if (X_NUM_RS == 3) begin : third_operand
+    assign rs3 = x_issue_req_i.rs[2];
+    mac4b_with_input mac_module 
+    (
+        .in_0     (rs1[7:0]),
+        .in_1     (rs1[15:8]),
+        .in_2     (rs1[23:16]),
+        .in_3     (rs1[31:24]),
+        .weight_0 (rs2[7:0]),
+        .weight_1 (rs2[15:8]),
+        .weight_2 (rs2[23:16]),
+        .weight_3 (rs2[31:24]),
+        .sum_in   (rs3),
+        .sum_out  (mac_sum)
+    );
+  end else begin : no_third_operand
+    mac4b mac_module 
+    (
+        .in_0     (rs1[7:0]),
+        .in_1     (rs1[15:8]),
+        .in_2     (rs1[23:16]),
+        .in_3     (rs1[31:24]),
+        .weight_0 (rs2[7:0]),
+        .weight_1 (rs2[15:8]),
+        .weight_2 (rs2[23:16]),
+        .weight_3 (rs2[31:24]),
+        .sum_out  (mac_sum)
+    );
+  end
+
 
   always_comb begin
     // Issue interface
