@@ -57,8 +57,8 @@ int processInput(        UDATA_T* inputBuffer,
 int main(int argc, char* argv[]) {
 
     // const N2D2::Network network{};
-#ifdef BENCHMARK
     size_t instret, cycles;
+#ifdef BENCHMARK
     size_t il1_miss, dl1_miss;
     size_t loads, stores;
     size_t stalls, sb_full;
