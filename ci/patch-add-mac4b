@@ -1,3 +1,13 @@
+From b5c8f2f70d7ae2a975a21aa1bdf38c763a3fa79a Mon Sep 17 00:00:00 2001
+From: Ianis Giraud <ianis.giraud@ens-paris-saclay.fr>
+Date: Tue, 27 Feb 2024 17:02:14 +0100
+Subject: [PATCH] Ajout mac4b
+
+---
+ include/opcode/riscv-opc.h | 3 +++
+ opcodes/riscv-opc.c        | 1 +
+ 2 files changed, 4 insertions(+)
+
 diff --git a/include/opcode/riscv-opc.h b/include/opcode/riscv-opc.h
 index 85d35c1e..5679767e 100644
 --- a/include/opcode/riscv-opc.h
@@ -51,3 +61,6 @@ index 6b65296a..9ea9fa9c 100644
  {"mul",        0, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MUL, MASK_MUL, match_opcode, 0 },
  {"mulh",       0, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MULH, MASK_MULH, match_opcode, 0 },
  {"mulhu",      0, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MULHU, MASK_MULHU, match_opcode, 0 },
+-- 
+2.43.0
+
