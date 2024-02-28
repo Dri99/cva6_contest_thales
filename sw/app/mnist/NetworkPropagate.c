@@ -53,7 +53,7 @@ static inline SUM_T mac4b(SUM_T result, p4uint8_t inputs, p4int8_t weights)
     //SUM_T result = 0;
     
 #   ifdef MAC4B
-    asm inline ( "mac4b %0, %1, %2"
+    asm inline ( "mac4b_rs3 %0, %1, %2, %0"
                    : "+r"(result)
                    : "r"(inputs), "r"(weights)
         );

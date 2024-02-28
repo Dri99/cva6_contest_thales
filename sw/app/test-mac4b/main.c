@@ -12,9 +12,9 @@ static inline int32_t mac4b(int32_t result, p4uint8_t inputs, p4int8_t weights)
     //SUM_T result = 0;
     
 #   ifdef MAC4B
-    asm inline ( "mac4b %0, %1, %2"
+    asm inline ( "mac4b_rs3 %0, %1, %2, %0"
                    : "+r"(result)
-                   : "r"(inputs), "r"(weights)
+                   : "r"(inputs), "r"(weights) 
         );
 #   else
     for (int i = 0; i < 4; i++) {
