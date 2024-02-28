@@ -7,14 +7,14 @@ typedef uint32_t p4uint8_t;
 typedef int32_t p4int8_t;
 
 #define MAC4B
-static inline int32_t mac4b(int32_t result, p4uint8_t inputs, p4int8_t weights)
+static inline int32_t mac4b(int32_t sum_in, p4uint8_t inputs, p4int8_t weights)
 {
-    //SUM_T result = 0;
+    int32_t result = 0;
     
 #   ifdef MAC4B
-    asm inline ( "mac4b_rs3 %0, %1, %2, %0"
-                   : "+r"(result)
-                   : "r"(inputs), "r"(weights) 
+    asm inline ( "mac4b %0, %1, %2, %3"
+                 : "=r"(result)
+                 : "r"(inputs), "r"(weights), "r"(sum_in)
         );
 #   else
     for (int i = 0; i < 4; i++) {
