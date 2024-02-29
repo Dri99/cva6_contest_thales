@@ -48,14 +48,14 @@ static int clamp(int v, int lo, int hi) {
 typedef uint32_t p4uint8_t;
 typedef int32_t p4int8_t;
 
-static inline SUM_T mac4b(SUM_T result, p4uint8_t inputs, p4int8_t weights)
+static inline SUM_T mac4b(SUM_T sum_in, p4uint8_t inputs, p4int8_t weights)
 {
-    //SUM_T result = 0;
+    SUM_T result = 0;
     
 #   ifdef MAC4B
-    asm inline ( "mac4b_rs3 %0, %1, %2, %0"
-                   : "+r"(result)
-                   : "r"(inputs), "r"(weights)
+    asm inline ( "mac4b %0, %1, %2, %3"
+                 : "+r"(result)
+                 : "r"(inputs), "r"(weights), "r"(sum_in)
         );
 #   else
     for (int i = 0; i < 4; i++) {
