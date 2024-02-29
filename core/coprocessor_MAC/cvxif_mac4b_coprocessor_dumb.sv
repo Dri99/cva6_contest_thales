@@ -51,9 +51,6 @@ module cvxif_mac4b_coprocessor
   //Data signals
   logic [31:0]        rs1;
   logic [31:0]        rs2;
-  if (X_NUM_RS == 3) begin : third_operand
-    logic [31:0]        rs3;
-  end
   logic [31:0]        mac_sum;
 
 
@@ -101,8 +98,10 @@ module cvxif_mac4b_coprocessor
   assign rs1 = x_issue_req_i.rs[0];     // First operand are the INPUTS
   assign rs2 = x_issue_req_i.rs[1];     // Second operand are the WEIGHTS
 
-  if (X_NUM_RS == 3) begin : third_operand
+  if (X_NUM_RS == 3) begin
+    logic [31:0] rs3;
     assign rs3 = x_issue_req_i.rs[2];
+    
     mac4b_with_input mac_module 
     (
         .in_0     (rs1[7:0]),
