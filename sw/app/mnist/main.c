@@ -84,8 +84,12 @@ int main(int argc, char* argv[]) {
     // Active les compteurs de performance
     write_csr(mhpmevent3, HPM_L1_ICACHE_MISSES);
     write_csr(mhpmevent4, HPM_L1_DCACHE_MISSES);
-    write_csr(mhpmevent5, HPM_LOADS);
-    write_csr(mhpmevent6, HPM_STORES);
+    //write_csr(mhpmevent5, HPM_LOADS);
+    write_csr(mhpmevent5, HPM_L1_ICACHE_ACCESS);
+    //write_csr(mhpmevent6, HPM_STORES);
+    write_csr(mhpmevent6, HPM_L1_DCACHE_ACCESS);
+    //write_csr(mhpmevent7, HPM_BRANCHS);
+    //write_csr(mhpmevent8, HPM_BRANCH_MIS);
     write_csr(mhpmevent7, HPM_STALL);
     write_csr(mhpmevent8, HPM_MSB_FULL);
 
