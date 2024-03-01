@@ -17,6 +17,8 @@ size_t align32_count = 0;
 
 size_t time_conv1, time_conv2, time_fc1, time_fc2, time_max;
 size_t stall_conv1, stall_conv2, stall_fc1, stall_fc2, stall_max;
+size_t branch_conv1, branch_conv2, branch_fc1, branch_fc2, branch_max;
+size_t bmis_conv1, bmis_conv2, bmis_fc1, bmis_fc2, bmis_max;
 #endif // BENCHMARK
 
 void readStimulus(
@@ -82,8 +84,8 @@ int main(int argc, char* argv[]) {
     // Active les compteurs de performance
     write_csr(mhpmevent3, HPM_L1_ICACHE_MISSES);
     write_csr(mhpmevent4, HPM_L1_DCACHE_MISSES);
-    write_csr(mhpmevent5, HPM_L1_ICACHE_ACCESS);
-    write_csr(mhpmevent6, HPM_L1_DCACHE_ACCESS);
+    write_csr(mhpmevent5, HPM_LOADS);
+    write_csr(mhpmevent6, HPM_STORES);
     write_csr(mhpmevent7, HPM_STALL);
     write_csr(mhpmevent8, HPM_MSB_FULL);
 
@@ -120,6 +122,7 @@ int main(int argc, char* argv[]) {
 #endif // BENCHMARK
 #endif // not X86
 
+    printf("\n==============================\n");
     printf("Expected  = %d\n", expectedOutputBuffer[0]);
     printf("Predicted = %d\n", predictedOutputBuffer[0]);
     printf("Result : %d/1\n", success);
@@ -133,17 +136,35 @@ int main(int argc, char* argv[]) {
     printf("stores : %d\n", (int)stores);
     printf("stalls : %d\n", (int)stalls);
     printf("scoreboard full : %d\n", (int)sb_full);
-
+    printf("\n");
     printf("macsOnRange calls : %d\n", macsOnRange_calls);
     printf("macsOnRange cycles : %d\n", (int)macsOnRange_time);
     printf("align32 count : %d\n", (int)align32_count);
     printf("align32 cycles : %d\n", (int)align32_time);
-
+    printf("\n");
     printf("conv1 %d cycles\n", time_conv1);
     printf("conv2 %d cycles\n", time_conv2);
     printf("fc1 %d cycles\n", time_fc1);
     printf("fc2 %d cycles\n", time_fc2);
     printf("max %d cycles\n", time_max);
+    printf("\n");
+    printf("conv1 %d branch\n", branch_conv1);
+    printf("conv2 %d branch\n", branch_conv2);
+    printf("fc1 %d branch\n", branch_fc1);
+    printf("fc2 %d branch\n", branch_fc2);
+    printf("max %d branch\n", branch_max);
+    printf("\n");
+    printf("conv1 %d branch mis\n", bmis_conv1);
+    printf("conv2 %d branch mis\n", bmis_conv2);
+    printf("fc1 %d branch mis\n", bmis_fc1);
+    printf("fc2 %d branch mis\n", bmis_fc2);
+    printf("max %d branch mis\n", bmis_max);
+    printf("\n");
+    printf("conv1 %d stalls\n", stall_conv1);
+    printf("conv2 %d stalls\n", stall_conv2);
+    printf("fc1 %d stalls\n", stall_fc1);
+    printf("fc2 %d stalls\n", stall_fc2);
+    printf("max %d stalls\n", stall_max);
 #endif // BENCHMARK
 
 #ifdef OUTPUTFILE

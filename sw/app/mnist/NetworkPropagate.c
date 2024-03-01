@@ -26,6 +26,8 @@ extern size_t align32_count;
 
 extern size_t time_conv1, time_conv2, time_fc1, time_fc2, time_max;
 extern size_t stall_conv1, stall_conv2, stall_fc1, stall_fc2, stall_max;
+extern size_t branch_conv1, branch_conv2, branch_fc1, branch_fc2, branch_max;
+extern size_t bmis_conv1, bmis_conv2, bmis_fc1, bmis_fc2, bmis_max;
 #endif // BENCHMARK
 
 static DATA_T mem[MEMORY_SIZE];
@@ -559,6 +561,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_conv1 = -read_csr(mcycle);
     stall_conv1 = -read_csr(mhpmcounter7);
+    branch_conv1 = -read_csr(mhpmcounter5);
+    bmis_conv1 = -read_csr(mhpmcounter6);
 #endif
 
     convcellPropagate1(inputs , conv1_output, conv1_biases, conv1_weights, 8,
@@ -572,6 +576,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_conv1 += read_csr(mcycle);
     stall_conv1 += read_csr(mhpmcounter7);
+    branch_conv1 += read_csr(mhpmcounter5);
+    bmis_conv1 += read_csr(mhpmcounter6);
 #endif
 
 #ifdef SAVE_OUTPUTS
@@ -589,6 +595,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_conv2 = -read_csr(mcycle);
     stall_conv2 = -read_csr(mhpmcounter7);
+    branch_conv2 = -read_csr(mhpmcounter5);
+    bmis_conv2 = -read_csr(mhpmcounter6);
 #endif
 
     convcellPropagate1(conv1_output , conv2_output, conv2_biases, conv2_weights, 8,
@@ -605,6 +613,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_conv2 += read_csr(mcycle);
     stall_conv2 += read_csr(mhpmcounter7);
+    branch_conv2 += read_csr(mhpmcounter5);
+    bmis_conv2 += read_csr(mhpmcounter6);
 #endif
 
 #ifdef SAVE_OUTPUTS
@@ -622,6 +632,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_fc1 = -read_csr(mcycle);
     stall_fc1 = -read_csr(mhpmcounter7);
+    branch_fc1 = -read_csr(mhpmcounter5);
+    bmis_fc1 = -read_csr(mhpmcounter6);
 #endif
 
     fccellPropagateUDATA_T(conv2_output , fc1_output, fc1_biases, fc1_weights, 8,
@@ -636,6 +648,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_fc1 += read_csr(mcycle);
     stall_fc1 += read_csr(mhpmcounter7);
+    branch_fc1 += read_csr(mhpmcounter5);
+    bmis_fc1 += read_csr(mhpmcounter6);
 #endif
 
 #ifdef SAVE_OUTPUTS
@@ -653,6 +667,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_fc2 = -read_csr(mcycle);
     stall_fc2 = -read_csr(mhpmcounter7);
+    branch_fc2 = -read_csr(mhpmcounter5);
+    bmis_fc2 = -read_csr(mhpmcounter6);
 #endif
 
     fccellPropagateDATA_T(fc1_output , fc2_output, fc2_biases, fc2_weights, 11,
@@ -668,6 +684,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_fc2 += read_csr(mcycle);
     stall_fc2 += read_csr(mhpmcounter7);
+    branch_fc2 += read_csr(mhpmcounter5);
+    bmis_fc2 += read_csr(mhpmcounter6);
 #endif
 
 #ifdef SAVE_OUTPUTS
@@ -679,6 +697,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_max = -read_csr(mcycle);
     stall_max = -read_csr(mhpmcounter7);
+    branch_max = -read_csr(mhpmcounter5);
+    bmis_max = -read_csr(mhpmcounter6);
 #endif
 
     maxPropagate1(fc2_output, outputs, maxPropagate_val, FC2_NB_OUTPUTS, FC2_OUTPUTS_HEIGHT, FC2_OUTPUTS_WIDTH, FC2_MEM_CONT_OFFSET, FC2_MEM_CONT_SIZE, FC2_MEM_WRAP_OFFSET, FC2_MEM_WRAP_SIZE, FC2_MEM_STRIDE);
@@ -686,6 +706,8 @@ void propagate(const UDATA_T* inputs, Target_T* outputs, UDATA_T* maxPropagate_v
 #ifdef BENCHMARK
     time_max += read_csr(mcycle);
     stall_max += read_csr(mhpmcounter7);
+    branch_max += read_csr(mhpmcounter5);
+    bmis_max += read_csr(mhpmcounter6);
 #endif
 
 #ifdef SAVE_OUTPUTS
