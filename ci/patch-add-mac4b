@@ -1,13 +1,23 @@
+From b5c8f2f70d7ae2a975a21aa1bdf38c763a3fa79a Mon Sep 17 00:00:00 2001
+From: Ianis Giraud <ianis.giraud@ens-paris-saclay.fr>
+Date: Tue, 27 Feb 2024 17:02:14 +0100
+Subject: [PATCH] Ajout mac4b
+
+---
+ include/opcode/riscv-opc.h | 3 +++
+ opcodes/riscv-opc.c        | 1 +
+ 2 files changed, 4 insertions(+)
+
 diff --git a/include/opcode/riscv-opc.h b/include/opcode/riscv-opc.h
-index 85d35c1efc9..a6b077128e7 100644
+index 85d35c1e..5679767e 100644
 --- a/include/opcode/riscv-opc.h
 +++ b/include/opcode/riscv-opc.h
 @@ -21,6 +21,8 @@
  #ifndef RISCV_ENCODING_H
  #define RISCV_ENCODING_H
  /* Instruction opcode macros.  */
-+#define MATCH_MAC4B 0x4000033
-+#define MASK_MAC4B 0xfe00707f
++#define MATCH_MAC4B 0x04000033
++#define MASK_MAC4B  0x0600707f
  #define MATCH_SLLI_RV32 0x1013
  #define MASK_SLLI_RV32  0xfe00707f
  #define MATCH_SRLI_RV32 0x5013
@@ -19,15 +29,34 @@ index 85d35c1efc9..a6b077128e7 100644
  DECLARE_INSN(slli_rv32, MATCH_SLLI_RV32, MASK_SLLI_RV32)
  DECLARE_INSN(srli_rv32, MATCH_SRLI_RV32, MASK_SRLI_RV32)
  DECLARE_INSN(srai_rv32, MATCH_SRAI_RV32, MASK_SRAI_RV32)
+diff --git a/opcodes/riscv-dis.c b/opcodes/riscv-dis.c
+index 7c9b228e..a5efa849 100644
+--- a/opcodes/riscv-dis.c
++++ b/opcodes/riscv-dis.c
+@@ -433,6 +433,11 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
+ 		 riscv_gpr_names[EXTRACT_OPERAND (RS2, l)]);
+ 	  break;
+ 
++	case 'r':
++	  print (info->stream, dis_style_register, "%s",
++		 riscv_gpr_names[EXTRACT_OPERAND (RS3, l)]);
++	  break;
++
+ 	case 'u':
+ 	  print (info->stream, dis_style_immediate, "0x%x",
+ 		 (unsigned)EXTRACT_UTYPE_IMM (l) >> RISCV_IMM_BITS);
 diff --git a/opcodes/riscv-opc.c b/opcodes/riscv-opc.c
-index 6b65296a3f2..f9750fe0c08 100644
+index 6b65296a..9ea9fa9c 100644
 --- a/opcodes/riscv-opc.c
 +++ b/opcodes/riscv-opc.c
 @@ -604,6 +604,7 @@ const struct riscv_opcode riscv_opcodes[] =
  {"amominu.d.aqrl", 64, INSN_CLASS_A, "d,t,0(s)", MATCH_AMOMINU_D|MASK_AQRL, MASK_AMOMINU_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
  
  /* Multiply/Divide instruction subset.  */
-+{"mac4b",     0, INSN_CLASS_M,     "d,s,t",     MATCH_MAC4B, MASK_MAC4B, match_opcode, 0 },
++{"mac4b",      0, INSN_CLASS_M,     "d,s,t,r",     MATCH_MAC4B, MASK_MAC4B, match_opcode, 0 },
  {"mul",        0, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MUL, MASK_MUL, match_opcode, 0 },
  {"mulh",       0, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MULH, MASK_MULH, match_opcode, 0 },
  {"mulhu",      0, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MULHU, MASK_MULHU, match_opcode, 0 },
+-- 
+2.43.0
+

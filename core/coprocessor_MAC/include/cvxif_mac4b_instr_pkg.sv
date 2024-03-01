@@ -21,7 +21,7 @@ package cvxif_mac4b_instr_pkg;
   parameter copro_issue_resp_t CoproInstr[NbInstr] = '{
       '{
           instr: 32'b00000_10_00000_00000_0_00_00000_0110011,  // MAC4B opcode
-          mask: 32'b11111_11_00000_00000_1_11_00000_1111111,
+          mask: 32'b00000_11_00000_00000_1_11_00000_1111111,
           rs_valid: '1,                                        // All operands required 
           resp : '{
               accept : 1'b1,
