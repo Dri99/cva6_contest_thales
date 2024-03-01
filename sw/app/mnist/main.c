@@ -16,6 +16,7 @@ size_t align32_time = 0;
 size_t align32_count = 0;
 
 size_t time_conv1, time_conv2, time_fc1, time_fc2, time_max;
+size_t stall_conv1, stall_conv2, stall_fc1, stall_fc2, stall_max;
 #endif // BENCHMARK
 
 void readStimulus(
@@ -57,8 +58,8 @@ int processInput(        UDATA_T* inputBuffer,
 int main(int argc, char* argv[]) {
 
     // const N2D2::Network network{};
-#ifdef BENCHMARK
     size_t instret, cycles;
+#ifdef BENCHMARK
     size_t il1_miss, dl1_miss;
     size_t loads, stores;
     size_t stalls, sb_full;
@@ -81,10 +82,10 @@ int main(int argc, char* argv[]) {
     // Active les compteurs de performance
     write_csr(mhpmevent3, HPM_L1_ICACHE_MISSES);
     write_csr(mhpmevent4, HPM_L1_DCACHE_MISSES);
-    write_csr(mhpmevent5, HPM_LOADS);
-    write_csr(mhpmevent6, HPM_STORES);
-    write_csr(mhpmevent7, HPM_BRANCHS);
-    write_csr(mhpmevent8, HPM_BRANCH_MIS);
+    write_csr(mhpmevent5, HPM_L1_ICACHE_ACCESS);
+    write_csr(mhpmevent6, HPM_L1_DCACHE_ACCESS);
+    write_csr(mhpmevent7, HPM_STALL);
+    write_csr(mhpmevent8, HPM_MSB_FULL);
 
     il1_miss = -read_csr(mhpmcounter3);
     dl1_miss = -read_csr(mhpmcounter4);
