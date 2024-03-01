@@ -202,13 +202,13 @@ module bht #(
         for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
           if (update_row_index == i) begin
             bht_ram_read_address_1[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;
-            bht[i].longest_loop      = bht_ram_rdata_0[i*BRAM_WORD_BITS+:8];
-            bht[i].loop_counter      = bht_ram_rdata_0[i*BRAM_WORD_BITS+8+:8];
-            bht[i].arbiter_counter   = bht_ram_rdata_0[i*BRAM_WORD_BITS+16+:2];
-            bht[i].saturation_counter= bht_ram_rdata_0[i*BRAM_WORD_BITS+18+:2];
+            bht[i].longest_loop      = bht_ram_rdata_1[i*BRAM_WORD_BITS+:8];
+            bht[i].loop_counter      = bht_ram_rdata_1[i*BRAM_WORD_BITS+8+:8];
+            bht[i].arbiter_counter   = bht_ram_rdata_1[i*BRAM_WORD_BITS+16+:2];
+            bht[i].saturation_counter= bht_ram_rdata_1[i*BRAM_WORD_BITS+18+:2];
             //bht[i].valid             = bht_ram_rdata_0[i*BRAM_WORD_BITS+20];
-            bht[i].longest_taken     = bht_ram_rdata_0[i*BRAM_WORD_BITS+21];
-            bht[i].last_taken        = bht_ram_rdata_0[i*BRAM_WORD_BITS+22];
+            bht[i].longest_taken     = bht_ram_rdata_1[i*BRAM_WORD_BITS+21];
+            bht[i].last_taken        = bht_ram_rdata_1[i*BRAM_WORD_BITS+22];
             
             //bht[i].saturation_counter = bht_ram_rdata_1[i*BRAM_WORD_BITS+:2];
             //bht[i].saturation_counter = bht_ram_rdata_1[i*BRAM_WORD_BITS+:2];
