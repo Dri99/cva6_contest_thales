@@ -56,7 +56,7 @@ static inline SUM_T mac4b(SUM_T sum_in, p4uint8_t inputs, p4int8_t weights)
     SUM_T result = 0;
     
 #   ifdef MAC4B
-    asm inline ( "mac4b %0, %1, %2, %3"
+    asm volatile ( "mac4b %0, %1, %2, %3"
                  : "=r"(result)
                  : "r"(inputs), "r"(weights), "r"(sum_in)
         );
