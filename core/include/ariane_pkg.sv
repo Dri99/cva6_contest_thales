@@ -244,14 +244,15 @@ package ariane_pkg;
     logic taken;
   } bht_prediction_t;
 
+  typedef logic [7:0] loop_counter_t;
   typedef struct packed {
     logic       last_taken;
-    logic       longest_taken;
     logic       valid;
     logic [1:0] saturation_counter;
     logic [1:0] arbiter_counter;
-    logic [7:0] loop_counter;
-    logic [7:0] longest_loop;
+    loop_counter_t last_seq_taken;
+    loop_counter_t last_seq_not_taken;
+    loop_counter_t seq_counter;
   } bht_t;
 
   typedef enum logic [3:0] {
