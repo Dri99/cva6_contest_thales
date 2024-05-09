@@ -132,9 +132,8 @@ module bht #(
     ariane_pkg::bht_t [                ariane_pkg::INSTR_PER_FETCH-1:0] bht;
     ariane_pkg::bht_t [                ariane_pkg::INSTR_PER_FETCH-1:0] bht_updated;
 
-    localparam LOOP_COUNTER_BITS = $bits(ariane_pkg::bht_t.seq_counter);
     ariane_pkg::bht_t  bht_rd0;
-    logic last_seq_chosen_0,last_seq_chosen_1 [LOOP_COUNTER_BITS-1:0];
+    ariane_pkg::loop_counter_t last_seq_chosen_0,last_seq_chosen_1;
     
     logic loop_prediction;
     logic loop_prediction_update;
@@ -174,7 +173,7 @@ module bht #(
 
           loop_prediction = bht_rd0.last_taken; //default assignement
           if(bht_rd0.seq_counter == last_seq_chosen_0)
-            loop_prediction = !bht_rd0.longest_taken;
+            loop_prediction = !bht_rd0.last_taken;
           
           
           if( loop_prediction == bht_rd0.saturation_counter[1]) begin
@@ -185,7 +184,7 @@ module bht #(
             else                        //we listen to loop_counter
               bht_prediction_o[i].taken = loop_prediction;
           end
-          bht_prediction_o[i].valid = valid;
+          bht_prediction_o[i].valid = bht_rd0.valid;
           //bht_prediction_o[i].taken = /*TODO: Evaluate if taken*/; //bht_ram_rdata_0[i*BRAM_WORD_BITS+1];
         end
       end
@@ -234,7 +233,7 @@ module bht #(
 
             // Update arbiter
             loop_prediction_update = bht[i].last_taken; //default assignement
-            if(bht[i].seq_counter==bht[i].last_seq_chosen_1)
+            if(bht[i].seq_counter== last_seq_chosen_1)
               loop_prediction_update = !bht[i].last_taken;
             //Same update as for the saturation counter, but here we take the correctness of loop counter as meter
             if (bht[i].arbiter_counter == 2'b11) begin
