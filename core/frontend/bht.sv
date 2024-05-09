@@ -132,13 +132,10 @@ module bht #(
     ariane_pkg::bht_t [                ariane_pkg::INSTR_PER_FETCH-1:0] bht;
     ariane_pkg::bht_t [                ariane_pkg::INSTR_PER_FETCH-1:0] bht_updated;
 
-    logic [7:0] longest_loop;
-    logic [7:0] loop_counter;
-    logic [1:0] arbiter_counter;
-    logic [1:0] saturation_counter;
-    logic valid;
-    logic longest_taken;
-    logic last_taken;
+    localparam LOOP_COUNTER_BITS = $bits(ariane_pkg::bht_t.seq_counter);
+    ariane_pkg::bht_t  bht_rd0;
+    logic last_seq_chosen_0,last_seq_chosen_1 [LOOP_COUNTER_BITS-1:0];
+    
     logic loop_prediction;
     logic loop_prediction_update;
 
@@ -159,37 +156,32 @@ module bht #(
       bht_ram_wdata = '0;
       bht_updated = '0;
       bht = '0;
-      longest_loop = '0;
-      loop_counter = '0;
-      arbiter_counter = '0;
-      saturation_counter = '0;
-      valid = '0;
-      longest_taken = '0;
-      last_taken = '0;
+      bht_rd0 = '0;
+      last_seq_chosen_0 = '0;
       loop_prediction = '0;
       loop_prediction_update = '0;
+      
+      last_seq_chosen_0 = '0;
+      last_seq_chosen_1 = '0;
 
       for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
         if (row_index == i) begin
           bht_ram_read_address_0[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
-          longest_loop      = bht_ram_rdata_0[i*BRAM_WORD_BITS+:8];
-          loop_counter      = bht_ram_rdata_0[i*BRAM_WORD_BITS+8+:8];
-          arbiter_counter   = bht_ram_rdata_0[i*BRAM_WORD_BITS+16+:2];
-          saturation_counter= bht_ram_rdata_0[i*BRAM_WORD_BITS+18+:2];
-          valid                   = bht_ram_rdata_0[i*BRAM_WORD_BITS+20];
-          longest_taken           = bht_ram_rdata_0[i*BRAM_WORD_BITS+21];
-          last_taken              = bht_ram_rdata_0[i*BRAM_WORD_BITS+22];
-          
-          loop_prediction = longest_taken; //default assignement
-          if(last_taken == longest_taken && loop_counter==longest_loop)
-            loop_prediction = !longest_taken;
+
+          bht_rd0      = bht_ram_rdata_0[i*BRAM_WORD_BITS+:BRAM_WORD_BITS];   
+
+          last_seq_chosen_0 = bht_rd0.last_taken ? bht_rd0.last_seq_taken : bht_rd0.last_seq_not_taken;       
+
+          loop_prediction = bht_rd0.last_taken; //default assignement
+          if(bht_rd0.seq_counter == last_seq_chosen_0)
+            loop_prediction = !bht_rd0.longest_taken;
           
           
-          if( loop_prediction == saturation_counter[1]) begin
-            bht_prediction_o[i].taken = saturation_counter[1];
+          if( loop_prediction == bht_rd0.saturation_counter[1]) begin
+            bht_prediction_o[i].taken = bht_rd0.saturation_counter[1];
           end else begin
-            if(arbiter_counter[1] == 0) //we listen to saturation_counter
-              bht_prediction_o[i].taken = saturation_counter[1];
+            if(bht_rd0.arbiter_counter[1] == 0) //we listen to saturation_counter
+              bht_prediction_o[i].taken = bht_rd0.saturation_counter[1];
             else                        //we listen to loop_counter
               bht_prediction_o[i].taken = loop_prediction;
           end
@@ -202,16 +194,8 @@ module bht #(
         for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
           if (update_row_index == i) begin
             bht_ram_read_address_1[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;
-            bht[i].longest_loop      = bht_ram_rdata_1[i*BRAM_WORD_BITS+:8];
-            bht[i].loop_counter      = bht_ram_rdata_1[i*BRAM_WORD_BITS+8+:8];
-            bht[i].arbiter_counter   = bht_ram_rdata_1[i*BRAM_WORD_BITS+16+:2];
-            bht[i].saturation_counter= bht_ram_rdata_1[i*BRAM_WORD_BITS+18+:2];
-            //bht[i].valid             = bht_ram_rdata_0[i*BRAM_WORD_BITS+20];
-            bht[i].longest_taken     = bht_ram_rdata_1[i*BRAM_WORD_BITS+21];
-            bht[i].last_taken        = bht_ram_rdata_1[i*BRAM_WORD_BITS+22];
+            bht[i]      = bht_ram_rdata_1[i*BRAM_WORD_BITS+:BRAM_WORD_BITS];
             
-            //bht[i].saturation_counter = bht_ram_rdata_1[i*BRAM_WORD_BITS+:2];
-            //bht[i].saturation_counter = bht_ram_rdata_1[i*BRAM_WORD_BITS+:2];
             if (bht[i].saturation_counter == 2'b11) begin
               // we can safely decrease it
               if (!bht_update_i.taken)
@@ -231,24 +215,27 @@ module bht #(
 
             // Update Loop Counter
             //default assignments
-            bht_updated[i].longest_loop   = bht[i].longest_loop;
-            bht_updated[i].longest_taken  = bht[i].longest_taken;
-            bht_updated[i].last_taken     = bht_update_i.taken;
+            bht_updated[i].seq_counter        = bht[i].seq_counter;
+            bht_updated[i].last_seq_not_taken = bht[i].last_seq_not_taken;
+            bht_updated[i].last_seq_taken     = bht[i].last_seq_taken;
+            bht_updated[i].last_taken         = bht_update_i.taken;
 
-            if( bht_update_i.taken == bht[i].longest_taken ) begin
-              bht_updated[i].loop_counter = bht[i].loop_counter + 1;
+            if( bht_update_i.taken == bht[i].last_taken ) begin
+              bht_updated[i].seq_counter = bht[i].seq_counter + 1;
             end else begin 
-              bht_updated[i].loop_counter = 1;
-              if(bht[i].loop_counter > bht[i].longest_taken) begin
-                bht_updated[i].longest_loop   = bht[i].loop_counter;
-                bht_updated[i].longest_taken  = bht[i].last_taken;
-              end
+              bht_updated[i].seq_counter = 1;
+              if(bht[i].last_taken)
+                bht_updated[i].last_seq_taken = bht[i].seq_counter;
+              else  
+                bht_updated[i].last_seq_not_taken = bht[i].seq_counter;
             end
 
+            last_seq_chosen_1 = bht[i].last_taken ? bht[i].last_seq_taken : bht[i].last_seq_not_taken;
+
             // Update arbiter
-            loop_prediction_update = bht[i].longest_taken; //default assignement
-            if(bht[i].last_taken == bht[i].longest_taken && bht[i].loop_counter==bht[i].longest_loop)
-              loop_prediction_update = !bht[i].longest_taken;
+            loop_prediction_update = bht[i].last_taken; //default assignement
+            if(bht[i].seq_counter==bht[i].last_seq_chosen_1)
+              loop_prediction_update = !bht[i].last_taken;
             //Same update as for the saturation counter, but here we take the correctness of loop counter as meter
             if (bht[i].arbiter_counter == 2'b11) begin
               // we can safely decrease it
@@ -272,7 +259,8 @@ module bht #(
             bht_ram_we[i] = 1'b1;
             bht_ram_write_address[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;
             //bht_ram_wdata[(i+1)*BRAM_WORD_BITS-1] =  1'b1; //valid
-            bht_ram_wdata[i*BRAM_WORD_BITS+:BRAM_WORD_BITS] = {
+            bht_ram_wdata[i*BRAM_WORD_BITS+:BRAM_WORD_BITS] = bht_updated[i];
+            /*bht_ram_wdata[i*BRAM_WORD_BITS+:BRAM_WORD_BITS] = {
               bht_updated[i].last_taken, 
               bht_updated[i].longest_taken,
               bht_updated[i].valid ,
@@ -280,7 +268,7 @@ module bht #(
               bht_updated[i].arbiter_counter ,
               bht_updated[i].loop_counter ,
               bht_updated[i].longest_loop
-            };
+            };*/
 
           end
         end
