@@ -34,7 +34,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigDataUserEn = 0;
   localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
-  localparam CVA6ConfigIcacheByteSize = 8192;
+  localparam CVA6ConfigIcacheByteSize = 512;
   localparam CVA6ConfigIcacheSetAssoc = 2;
   localparam CVA6ConfigIcacheLineWidth = 128;
   localparam CVA6ConfigDcacheByteSize = 8192;
@@ -51,7 +51,7 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigFPGAEn = 1;
 
-  localparam CVA6ConfigNrLoadPipeRegs = 1;
+  localparam CVA6ConfigNrLoadPipeRegs = 0;
   localparam CVA6ConfigNrStorePipeRegs = 0;
   localparam CVA6ConfigNrLoadBufEntries = 2;
 
@@ -59,8 +59,8 @@ package cva6_config_pkg;
   localparam CVA6ConfigDataTlbEntries = 2;
 
   localparam CVA6ConfigRASDepth = 2;
-  localparam CVA6ConfigBTBEntries = 32;
-  localparam CVA6ConfigBHTEntries = 128;
+  localparam CVA6ConfigBTBEntries = 2;
+  localparam CVA6ConfigBHTEntries = 8;
 
   localparam CVA6ConfigNrPMPEntries = 0;
 
