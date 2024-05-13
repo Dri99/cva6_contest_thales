@@ -136,7 +136,6 @@ module bht #(
     ariane_pkg::loop_counter_t last_seq_chosen_0,last_seq_chosen_1;
     
     logic loop_prediction;
-    logic [7:0] last_seq_like_curr_update; //TODO: they should be arrays as they should be doubled for INSTR_PER_FETCH value we may read per clock
     logic loop_prediction_update;
 
     if (CVA6Cfg.RVC) begin : gen_row_index
